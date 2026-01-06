@@ -1,0 +1,152 @@
+/**
+ * TMDB API service
+ * Handles fetching trending movies from The Movie Database API
+ */
+
+const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
+const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500';
+const TMDB_LOGO_BASE_URL = 'https://image.tmdb.org/t/p/w500';
+const TMDB_BACKDROP_BASE_URL = 'https://image.tmdb.org/t/p/w1280';
+
+/**
+ * Fetches trending movies from TMDB
+ * @returns {Promise<Array>} Array of movie objects
+ */
+export const fetchTrendingMovies = async () => {
+  try {
+    // Try to get API key from environment variable
+    let apiKey = import.meta.env.VITE_TMDB_API_KEY;
+    
+    // Debug: Log environment variable status
+    console.log('API Key from env:', apiKey);
+    console.log('All env vars:', import.meta.env);
+    
+    // Fallback: if env var is not available, use the provided API key
+    // This ensures the app works even if .env isn't being read properly
+    if (!apiKey || apiKey.trim() === '' || apiKey === undefined) {
+      console.warn('VITE_TMDB_API_KEY not found in environment, using fallback key');
+      apiKey = '05a3f3071ad3fa222ab689fb62ed0df1';
+    }
+    
+    if (!apiKey || apiKey.trim() === '') {
+      console.error('TMDB API key is missing. Make sure VITE_TMDB_API_KEY is set in .env file');
+      throw new Error('TMDB API key is not configured. Please check your .env file and restart the dev server.');
+    }
+
+    const response = await fetch(
+      `${TMDB_BASE_URL}/trending/movie/day?api_key=${apiKey}`
+    );
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch movies: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return data.results || [];
+  } catch (error) {
+    console.error('Error fetching trending movies:', error);
+    throw error;
+  }
+};
+
+/**
+ * Gets the full poster image URL from TMDB
+ * @param {string} posterPath - The poster path from TMDB
+ * @returns {string} Full image URL
+ */
+export const getPosterUrl = (posterPath) => {
+  if (!posterPath) {
+    return 'https://via.placeholder.com/500x750?text=No+Image';
+  }
+  return `${TMDB_IMAGE_BASE_URL}${posterPath}`;
+};
+
+export const getLogoUrl = (logoPath) => {
+  if (!logoPath) return null;
+  if (logoPath.startsWith('http://') || logoPath.startsWith('https://')) {
+    return logoPath;
+  }
+  return `${TMDB_LOGO_BASE_URL}${logoPath}`;
+};
+
+/**
+ * Gets the full backdrop image URL from TMDB
+ * @param {string} backdropPath - The backdrop path from TMDB
+ * @returns {string} Full image URL
+ */
+export const getBackdropUrl = (backdropPath) => {
+  if (!backdropPath) {
+    return 'https://via.placeholder.com/1280x720?text=No+Image';
+  }
+  return `${TMDB_BACKDROP_BASE_URL}${backdropPath}`;
+};
+
+/**
+ * Searches for movies using TMDB API
+ * @param {string} query - Search query
+ * @returns {Promise<Array>} Array of movie objects
+ */
+export const searchMovies = async (query) => {
+  try {
+    let apiKey = import.meta.env.VITE_TMDB_API_KEY;
+    
+    if (!apiKey || apiKey.trim() === '' || apiKey === undefined) {
+      apiKey = '05a3f3071ad3fa222ab689fb62ed0df1';
+    }
+
+    if (!query || query.trim() === '') {
+      return [];
+    }
+
+    const response = await fetch(
+      `${TMDB_BASE_URL}/search/movie?api_key=${apiKey}&query=${encodeURIComponent(query)}`
+    );
+
+    if (!response.ok) {
+      throw new Error(`Failed to search movies: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return data.results || [];
+  } catch (error) {
+    console.error('Error searching movies:', error);
+    throw error;
+  }
+};
+
+/**
+ * Fetches a movie logo from TMDB images endpoint
+ * @param {number} movieId
+ * @returns {Promise<string|null>} logo file_path
+ */
+export const fetchMovieLogo = async (movieId) => {
+    try {
+      let apiKey = import.meta.env.VITE_TMDB_API_KEY;
+  
+      if (!apiKey || apiKey.trim() === '' || apiKey === undefined) {
+        apiKey = '05a3f3071ad3fa222ab689fb62ed0df1';
+      }
+  
+      const response = await fetch(
+        `${TMDB_BASE_URL}/movie/${movieId}/images?api_key=${apiKey}`
+      );
+  
+      if (!response.ok) {
+        throw new Error(`Failed to fetch movie images: ${response.statusText}`);
+      }
+  
+      const data = await response.json();
+      const logos = data.logos || [];
+  
+      // Prefer English logo, fallback to first available
+      const selectedLogo =
+        logos.find((logo) => logo.iso_639_1 === 'en') || logos[0];
+  
+      return selectedLogo ? selectedLogo.file_path : null;
+    } catch (error) {
+      console.error('Error fetching movie logo:', error);
+      return null;
+    }
+  };
+  
+
