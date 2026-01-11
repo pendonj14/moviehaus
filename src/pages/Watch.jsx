@@ -1,7 +1,8 @@
 import { useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { fetchTrendingMovies, fetchTrendingShows, getPosterUrl, fetchTVShowDetails, fetchSeasonDetails } from '../api/tmdb';
+import { fetchTrendingMovies, fetchTrendingShows, getPosterUrl, fetchTVShowDetails, fetchSeasonDetails, getStillUrl} from '../api/tmdb';
 import Header from '../components/Header';
+
 
 /**
  * Watch Page Component
@@ -23,14 +24,14 @@ const Watch = () => {
         setLoading(true);
         let foundContent;
 
-        if (type === 'anime') {
-          // Fetch anitails
+        if (type === 'anime' || type === 'tv') {
+          // Fetch TV show/anime details
           foundContent = await fetchTVShowDetails(id);
           setContent(foundContent);
           
           // Set up seasons
           if (foundContent.seasons) {
-            // Regular TV shows have seasons
+            // TV shows and anime have seasons
             setSeasons(foundContent.seasons);
             // Load first season's episodes
             if (foundContent.seasons.length > 0) {
@@ -132,22 +133,29 @@ const Watch = () => {
       <Header />
 
       {/* Video Player Container */}
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 py-8 ">
         <div className="mx-auto max-w-7xl">
           {/* Videasy iframe player */}
-          <div className="relative aspect-video w-full overflow-hidden rounded-lg bg-black shadow-2xl">
-            <iframe
-              key={videasyUrl}
-              src={videasyUrl}
-              className="h-full w-full"
-              allowFullScreen
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              title={title}
-            ></iframe>
-          </div>
+          <div
+          className="
+            relative w-full bg-black shadow-2xl overflow-hidden
+            h-[100svh] sm:h-auto
+            sm:aspect-video
+            rounded-none sm:rounded-lg
+          "
+        >
+          <iframe
+            key={videasyUrl}
+            src={videasyUrl}
+            className="absolute inset-0 h-full w-full"
+            allowFullScreen
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            title={title}
+          />
+        </div>
 
           {/* TV Show Controls */}
-          {type === 'tv' && seasons.length > 0 && (
+          {(type === 'tv' || type === 'anime') && seasons.length > 0 && (
             <div className="mt-6 rounded-lg bg-slate-800 p-6">
               {/* Season Selector */}
               <div className="mb-6">
@@ -174,29 +182,72 @@ const Watch = () => {
               {/* Episode Selector */}
               {episodes.length > 0 && (
                 <div>
-                  <label className="block text-sm font-semibold text-white mb-3">
-                    Select Episode
-                  </label>
-                  <div className="grid grid-cols-2 gap-3 max-h-96 overflow-y-auto">
+                  <h3 className="mb-4 text-lg font-semibold text-white">
+                    Episodes
+                  </h3>
+
+                  <div className="
+                    grid gap-4
+                    grid-cols-1
+                    sm:grid-cols-2
+                    lg:grid-cols-3
+                    xl:grid-cols-4
+                    max-h-[32rem]
+                    overflow-y-auto
+                    pr-2
+                    no-scrollbar
+                  ">
                     {episodes.map((episode) => (
-                      <button
+                      <div
                         key={episode.episode_number}
                         onClick={() => setSelectedEpisode(episode.episode_number)}
-                        className={`p-3 rounded-lg text-left transition-all ${
-                          selectedEpisode === episode.episode_number
-                            ? 'bg-[#ffc30e] text-black'
-                            : 'bg-slate-700 text-white hover:bg-slate-600'
-                        }`}
+                        className={`
+                          group cursor-pointer overflow-hidden rounded-lg
+                          bg-slate-700 transition-all duration-300
+                          hover:scale-[1.02] hover:bg-slate-600
+                          ${selectedEpisode === episode.episode_number
+                            ? 'ring-2 ring-[#ffc30e]'
+                            : ''
+                          }
+                        `}
                       >
-                        <div className="font-semibold">
-                          Ep {episode.episode_number}: {episode.name}
-                        </div>
-                        {episode.air_date && (
-                          <div className="text-xs opacity-75">
-                            {new Date(episode.air_date).toLocaleDateString()}
+                        {/* Episode Image */}
+                        <div className="relative aspect-video overflow-hidden bg-black">
+                          <img
+                            src={getStillUrl(episode.still_path)}
+                            alt={episode.name}
+                            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-110"
+                            loading="lazy"
+                          />
+
+                          {/* Episode number overlay */}
+                          <div className="absolute bottom-2 left-2 rounded bg-black/70 px-2 py-1 text-xs text-white">
+                            EP {episode.episode_number}
                           </div>
-                        )}
-                      </button>
+                        </div>
+
+                        {/* Episode Info */}
+                        <div className="p-3">
+                          <h4 className="line-clamp-1 font-semibold text-white">
+                            {episode.name}
+                          </h4>
+
+                          {episode.overview && (
+                            <p className="mt-1 line-clamp-2 text-xs text-gray-300">
+                              {episode.overview}
+                            </p>
+                          )}
+
+                          <div className="mt-2 flex items-center justify-between text-xs text-gray-400">
+                            {episode.runtime && <span>{episode.runtime}m</span>}
+                            {episode.air_date && (
+                              <span>
+                                {new Date(episode.air_date).getFullYear()}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
                     ))}
                   </div>
                 </div>
@@ -204,64 +255,7 @@ const Watch = () => {
             </div>
           )}
 
-          {/* Content Info */}
-          {content && (
-            <div className="mt-8 grid gap-8 md:grid-cols-3">
-              <div className="md:col-span-1">
-                <img
-                  src={getPosterUrl(content.poster_path)}
-                  alt={title}
-                  className="w-full rounded-lg shadow-lg"
-                />
-              </div>
-              <div className="md:col-span-2">
-                <h2 className="mb-4 text-2xl font-bold text-white">
-                  {title}
-                </h2>
-                {type === 'tv' && content.number_of_seasons && (
-                  <p className="mb-2 text-gray-400">
-                    <span className="font-semibold">Seasons:</span> {content.number_of_seasons} | 
-                    <span className="font-semibold ml-2">Episodes:</span> {content.number_of_episodes}
-                  </p>
-                )}
-                {type === 'tv' && content.first_air_date && (
-                  <p className="mb-2 text-gray-400">
-                    <span className="font-semibold">First Air Date:</span> {content.first_air_date}
-                  </p>
-                )}
-                {type === 'movie' && content.release_date && (
-                  <p className="mb-2 text-gray-400">
-                    <span className="font-semibold">Release Date:</span> {content.release_date}
-                  </p>
-                )}
-                {content.overview && (
-                  <p className="mb-4 text-gray-300 leading-relaxed">
-                    {content.overview}
-                  </p>
-                )}
-                {content.vote_average && (
-                  <div className="flex items-center gap-2">
-                    <span className="text-gray-400">Rating:</span>
-                    <span className="text-yellow-400">
-                      ⭐ {content.vote_average.toFixed(1)}/10
-                    </span>
-                  </div>
-                )}
-                {content.genres && content.genres.length > 0 && (
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    {content.genres.map((genre) => (
-                      <span
-                        key={genre.id}
-                        className="inline-block bg-slate-700 px-3 py-1 rounded-full text-sm text-gray-200"
-                      >
-                        {genre.name}
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
+          
         </div>
       </main>
     </div>

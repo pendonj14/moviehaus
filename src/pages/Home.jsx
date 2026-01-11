@@ -23,9 +23,9 @@ const Home = () => {
         setError(null);
         let trendingContent;
         if (contentType === 'movie') {
-          trendingContent = await fetchTrendingMovies();
+          trendingContent = await fetchTrendingMovies(2);
         } else if (contentType === 'tv') {
-          trendingContent = await fetchTrendingShows();
+          trendingContent = await fetchTrendingShows(2);
         }
         setContent(trendingContent);
       } catch (err) {
