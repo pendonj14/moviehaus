@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import MovieCard from '../components/MovieCard';
 
-const RecentlyWatched = () => {
+const RecentlyWatched = ( { contentType }) => {
   const [recentMovies, setRecentMovies] = useState([]);
   const scrollContainerRef = useRef(null);
 
@@ -63,7 +63,7 @@ const RecentlyWatched = () => {
             className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide py-5 px-2 scroll-smooth"
           >
             {recentMovies.map((movie) => (
-              <MovieCard key={movie.id} movie={movie} />
+              <MovieCard key={movie.id} movie={movie} contentType={movie.type} />
             ))}
           </div>
 

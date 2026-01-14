@@ -57,8 +57,17 @@ const Header = ({ contentType = 'movie', onContentTypeChange }) => {
 
     setIsSearching(true);
     try {
-      const results = await searchMultiMedia(query, localContentType);
-      setSearchResults(results);
+      // Search across both movie and tv types
+      const movieResults = await searchMultiMedia(query, 'movie');
+      const tvResults = await searchMultiMedia(query, 'tv');
+      
+      // Combine and deduplicate results
+      const combined = [...movieResults, ...tvResults];
+      const uniqueResults = Array.from(
+        new Map(combined.map(item => [item.id, item])).values()
+      );
+      
+      setSearchResults(uniqueResults);
       setShowResults(true);
     } catch (error) {
       console.error('Search error:', error);
@@ -128,7 +137,7 @@ const Header = ({ contentType = 'movie', onContentTypeChange }) => {
             onClick={() => handleContentTypeChange('movie')}
             className={`font-medium text-sm transition-colors uppercase tracking-widest pb-1 ${
               localContentType === 'movie'
-                ? 'text-white border-b-2 border-white'
+                ? 'text-white border-b-2 border-[#ffc30e]'
                 : 'text-gray-300 hover:text-white hover:border-b-2 border-white/50'
             }`}
           >
@@ -138,7 +147,7 @@ const Header = ({ contentType = 'movie', onContentTypeChange }) => {
             onClick={() => handleContentTypeChange('tv')}
             className={`font-medium text-sm transition-colors uppercase tracking-widest pb-1 ${
               localContentType === 'tv'
-                ? 'text-white border-b-2 border-white'
+                ? 'text-white border-b-2 border-[#ffc30e]'
                 : 'text-gray-300 hover:text-white hover:border-b-2 border-white/50'
             }`}
           >

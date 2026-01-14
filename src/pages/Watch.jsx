@@ -106,7 +106,7 @@ const Watch = () => {
   const getVideasyUrl = () => {
     if (type === 'tv') {
       // For TV shows: tv/{show_id}/{season}/{episode}
-      return `https://player.videasy.net/tv/${id}/${selectedSeason}/${selectedEpisode}`;
+      return `https://player.videasy.net/tv/${id}/${selectedSeason}/${selectedEpisode}?nextEpisode=true&autoplayNextEpisode=true&color=ffc30e`;
     } else {
       // For movies: movie/{id}
       return `https://player.videasy.net/movie/${id}`;
