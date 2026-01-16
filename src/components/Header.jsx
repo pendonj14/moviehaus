@@ -207,7 +207,7 @@ const Header = ({ contentType = 'movie', onContentTypeChange }) => {
                 className="w-full bg-transparent text-white text-sm px-3 py-2 focus:outline-none placeholder-gray-400"
               />
               
-              {/* Close/Clear Button */}
+              {/* Close Button */}
               {searchQuery && (
                  <button 
                    type="button" 
