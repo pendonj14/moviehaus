@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import MovieCard from '../components/MovieCard';
 
-const RecentlyWatched = ( { contentType }) => {
+const RecentlyWatched = ( ) => {
   const [recentMovies, setRecentMovies] = useState([]);
   const scrollContainerRef = useRef(null);
 
