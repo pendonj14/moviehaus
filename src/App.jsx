@@ -2,7 +2,6 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Home from './pages/Home';
 import Watch from './pages/Watch';
 import './styles/index.css';
-import Particles from './components/Particles';
 
 /**
  * Main App Component

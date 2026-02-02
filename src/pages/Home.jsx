@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { fetchTrendingMovies, fetchTrendingShows } from '../api/tmdb';
 import Header from '../components/Header';
 import HeroSlideshow from '../components/HeroSlideshow';
@@ -10,10 +11,18 @@ import MovieRow from '../components/MovieRow';
  * Displays trending movies, TV shows, or anime with hero slideshow and content rows
  */
 const Home = () => {
+  const location = useLocation();
   const [contentType, setContentType] = useState('movie');
   const [content, setContent] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Check if navigation state has contentType
+  useEffect(() => {
+    if (location.state?.contentType) {
+      setContentType(location.state.contentType);
+    }
+  }, [location.state?.contentType]);
 
   useEffect(() => {
     // Fetch trending content when component mounts or content type changes

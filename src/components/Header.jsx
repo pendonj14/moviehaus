@@ -113,7 +113,13 @@ const Header = ({ contentType = 'movie', onContentTypeChange }) => {
 
   const handleContentTypeChange = (type) => {
     setLocalContentType(type);
-    onContentTypeChange?.(type);
+    
+    // If user is on watch page, redirect to home with the new content type
+    if (location.pathname.includes('/watch/')) {
+      navigate('/', { state: { contentType: type } });
+    } else {
+      onContentTypeChange?.(type);
+    }
   };
 
   return (
